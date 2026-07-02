@@ -3,7 +3,7 @@
 // Separado de api.js para eliminar dependência circular com engine.js
 // ================================================================
 import { TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, CAPITAL, ALERT_COOLDOWN } from './config.js';
-import { telegramStatus, alertLog, lastAlertTime, currentRegime, globalData } from './state.js';
+import { telegramStatus, setTelegramStatus, alertLog, lastAlertTime, currentRegime, globalData } from './state.js';
 import { calculateKellySizing } from './engine.js';
 
 export async function sendTelegramAlert(message) {
@@ -12,10 +12,10 @@ export async function sendTelegramAlert(message) {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'HTML' })
         });
-        if (r.ok) { telegramStatus = 'online'; return true; }
+        if (r.ok) { setTelegramStatus('online'); return true; }
         console.warn('Falha alerta:', await r.text());
-        telegramStatus = 'offline'; return false;
-    } catch (e) { console.warn('Erro alerta:', e); telegramStatus = 'offline'; return false; }
+        setTelegramStatus('offline'); return false;
+    } catch (e) { console.warn('Erro alerta:', e); setTelegramStatus('offline'); return false; }
 }
 
 export async function sendStructuredAlert(signalType, score, price, stop, targets, rationale, components, regime) {
