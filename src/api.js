@@ -3,7 +3,7 @@
 // Telegram movido para telegram.js para eliminar dependência circular
 // ================================================================
 import { FRED_API_KEY, ETHERSCAN_KEY } from './config.js';
-import { globalData, currentFundingRate, fundingHistory } from './state.js';
+import { globalData, currentFundingRate, fundingHistory, setCurrentFundingRate } from './state.js';
 
 // ----------------------------------------------------------------
 // CLIENT BASE
@@ -101,11 +101,32 @@ export async function fetchDeFiData() {
 export async function fetchBinanceDerivatives() {
     try {
         const r1 = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1');
-        if (r1?.ok) { const d = await r1.json(); const fr = parseFloat(d[0]?.fundingRate) || 0; currentFundingRate = fr; fundingHistory.push({ fundingRate: fr }); if (fundingHistory.length > 100) fundingHistory.shift(); globalData.fundingRate = fr; const el = document.getElementById('funding-rate'); if (el) el.textContent = (fr * 100).toFixed(4) + '% (live)'; const ie = document.getElementById('funding-rate-interp'); if (ie) ie.textContent = fr > 0.0001 ? 'Longs pagam' : fr < -0.0001 ? 'Shorts pagam' : 'Neutro'; }
+        if (r1?.ok) { const d = await r1.json(); const fr = parseFloat(d[0]?.fundingRate) || 0; setCurrentFundingRate(fr); fundingHistory.push({ fundingRate: fr }); if (fundingHistory.length > 100) fundingHistory.shift(); globalData.fundingRate = fr; const el = document.getElementById('funding-rate'); if (el) el.textContent = (fr * 100).toFixed(4) + '% (live)'; const ie = document.getElementById('funding-rate-interp'); if (ie) ie.textContent = fr > 0.0001 ? 'Longs pagam' : fr < -0.0001 ? 'Shorts pagam' : 'Neutro'; }
         const rA = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=8');
         if (rA?.ok) { const d = await rA.json(); const avg = d.reduce((s, i) => s + parseFloat(i.fundingRate), 0) / d.length; if (!isNaN(avg)) { const el = document.getElementById('funding-rate-avg'); if (el) el.textContent = (avg * 100).toFixed(4) + '% (live)'; } }
         const r2 = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT');
-        if (r2?.ok) { const d = await r2.json(); const oi = parseFloat(d.openInterest) || 0; if (oi > 0) { const el = document.getElementById('open-interest'); if (el) el.textContent = '$' + Number(oi).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' (live)'; const prev = (() => { try { return parseFloat(localStorage.getItem('prevOI')); } catch (_) { return 0; } })() || oi * 0.915; if (prev > 0) { const delta = ((oi - prev) / prev) * 100; globalData.oiDelta = delta; const el2 = document.getElementById('oi-delta'); if (el2) el2.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '% (live)'; const ie = document.getElementById('oi-delta-interp'); if (ie) { if (delta > 10) { ie.textContent = 'OI >10% — divergencia!'; ie.className = 'alert-divergence'; } else { ie.textContent = 'Normal'; ie.className = ''; } } try { localStorage.setItem('prevOI', oi); } catch (_) {} } }
+        if (r2?.ok) {
+            const d = await r2.json(); const oi = parseFloat(d.openInterest) || 0;
+            if (oi > 0) {
+                const el = document.getElementById('open-interest'); if (el) el.textContent = '$' + Number(oi).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' (live)';
+                // FIX: não fabricar baseline (antes usava oi*0.915 como "prev" fake).
+                // Sem histórico real na primeira carga, reporta honestamente "coletando" em vez de um delta inventado.
+                const stored = (() => { try { return parseFloat(localStorage.getItem('prevOI')); } catch (_) { return NaN; } })();
+                const el2 = document.getElementById('oi-delta');
+                const ie = document.getElementById('oi-delta-interp');
+                if (!isNaN(stored) && stored > 0) {
+                    const delta = ((oi - stored) / stored) * 100;
+                    globalData.oiDelta = delta;
+                    if (el2) el2.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '% (live)';
+                    if (ie) { if (delta > 10) { ie.textContent = 'OI >10% — divergencia!'; ie.className = 'alert-divergence'; } else { ie.textContent = 'Normal'; ie.className = ''; } }
+                } else {
+                    globalData.oiDelta = 0;
+                    if (el2) el2.textContent = 'Coletando baseline... (live)';
+                    if (ie) { ie.textContent = 'Aguardando 2a leitura'; ie.className = ''; }
+                }
+                try { localStorage.setItem('prevOI', oi); } catch (_) {}
+            }
+        }
         const rLS = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/topLongShortPositionRatio?symbol=BTCUSDT&period=24h&limit=1');
         if (rLS?.ok) { const d = (await rLS.json())[0]; if (d) { const lp = (+d.longPositionRatio * 100).toFixed(1); const el = document.getElementById('ls-ratio-pos'); if (el) el.textContent = lp + '% / ' + (+d.shortPositionRatio * 100).toFixed(1) + '% (live)'; const ie = document.getElementById('ls-ratio-pos-interp'); if (ie) { if (+lp > 70) { ie.textContent = 'Long extremo (>70%)'; ie.className = 'alert-divergence'; } else { ie.textContent = 'Neutro'; ie.className = ''; } } globalData.rsi = 50 + (+lp - 50) * 0.5; } }
         const rLA = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/topLongShortAccountRatio?symbol=BTCUSDT&period=24h&limit=1');
