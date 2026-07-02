@@ -2,7 +2,7 @@
 // ENGINE.JS — Indicadores, Regime, Score, Sinais, Kelly, Optimizer
 // ================================================================
 import { CAPITAL, ALERT_COOLDOWN, REGIME_WEIGHTS, EMA50_HISTORY_MAX } from './config.js';
-import { globalData, currentRegime, candleHistory, ema50History, fundingHistory, alertLog, tradeHistory, filterWeights, lastAlertTime, lastScore, previousScore } from './state.js';
+import { globalData, currentRegime, setCurrentRegime, candleHistory, ema50History, fundingHistory, alertLog, tradeHistory, filterWeights, lastAlertTime, setLastAlertTime, lastScore, previousScore, setPreviousScore } from './state.js';
 import { sendTelegramAlert, sendStructuredAlert } from './telegram.js';
 
 // ================================================================
@@ -507,6 +507,10 @@ export function processIndicators() {
 
     // Regime
     const regime = detectMarketRegime(price, ema50, ema50Prev, ema200, ts.adx);
+    // FIX: sem isso, currentRegime ficava travado em 'RANGE' para sempre —
+    // computeScore(), confirmSignalV13() e calculateKellySizing() usavam sempre
+    // os pesos de RANGE mesmo em BULL/BEAR real.
+    setCurrentRegime(regime);
     return regime;
 }
 
@@ -519,11 +523,11 @@ export function checkAdditionalAlerts(score) {
     const price = globalData.price || 60000;
     const ts = () => new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-    if (previousScore < 50 && score >= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
-    else if (previousScore > 50 && score <= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
-    if (previousScore - score >= 20) { sendTelegramAlert('⚠️ <b>RISCO ELEVADO</b>\nScore caiu ' + (previousScore - score) + ' pts\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
-    if (score <= 20) { sendTelegramAlert('🔴 <b>SAIDA TOTAL</b>\nScore: ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
-    if (score >= 85) { sendTelegramAlert('🟢 <b>SINAL FORTE</b>\nScore: ' + score + ' | Regime: ' + currentRegime + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+    if (previousScore < 50 && score >= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
+    else if (previousScore > 50 && score <= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
+    if (previousScore - score >= 20) { sendTelegramAlert('⚠️ <b>RISCO ELEVADO</b>\nScore caiu ' + (previousScore - score) + ' pts\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
+    if (score <= 20) { sendTelegramAlert('🔴 <b>SAIDA TOTAL</b>\nScore: ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
+    if (score >= 85) { sendTelegramAlert('🟢 <b>SINAL FORTE</b>\nScore: ' + score + ' | Regime: ' + currentRegime + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
 
-    previousScore = score;
+    setPreviousScore(score);
 }
