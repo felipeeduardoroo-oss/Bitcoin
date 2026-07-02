@@ -1,0 +1,177 @@
+diff -ruN Bitcoin-original/Bitcoin-main/index.html Bitcoin-main/index.html
+--- Bitcoin-original/Bitcoin-main/index.html	2026-07-02 23:19:57.000000000 +0000
++++ Bitcoin-main/index.html	2026-07-02 23:39:45.449030808 +0000
+@@ -342,6 +342,7 @@
+         <span id="test-btn-label">Testar Alerta</span>
+     </button>
+ 
+-   
++    <!-- FIX CRÍTICO: entry point do app nunca era carregado — nada de src/*.js executava -->
++    <script type="module" src="src/main.js"></script>
+ </body>
+ </html>
+diff -ruN Bitcoin-original/Bitcoin-main/src/api.js Bitcoin-main/src/api.js
+--- Bitcoin-original/Bitcoin-main/src/api.js	2026-07-02 23:19:57.000000000 +0000
++++ Bitcoin-main/src/api.js	2026-07-02 23:39:05.296876344 +0000
+@@ -3,7 +3,7 @@
+ // Telegram movido para telegram.js para eliminar dependência circular
+ // ================================================================
+ import { FRED_API_KEY, ETHERSCAN_KEY } from './config.js';
+-import { globalData, currentFundingRate, fundingHistory } from './state.js';
++import { globalData, currentFundingRate, fundingHistory, setCurrentFundingRate } from './state.js';
+ 
+ // ----------------------------------------------------------------
+ // CLIENT BASE
+@@ -101,11 +101,32 @@
+ export async function fetchBinanceDerivatives() {
+     try {
+         const r1 = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=1');
+-        if (r1?.ok) { const d = await r1.json(); const fr = parseFloat(d[0]?.fundingRate) || 0; currentFundingRate = fr; fundingHistory.push({ fundingRate: fr }); if (fundingHistory.length > 100) fundingHistory.shift(); globalData.fundingRate = fr; const el = document.getElementById('funding-rate'); if (el) el.textContent = (fr * 100).toFixed(4) + '% (live)'; const ie = document.getElementById('funding-rate-interp'); if (ie) ie.textContent = fr > 0.0001 ? 'Longs pagam' : fr < -0.0001 ? 'Shorts pagam' : 'Neutro'; }
++        if (r1?.ok) { const d = await r1.json(); const fr = parseFloat(d[0]?.fundingRate) || 0; setCurrentFundingRate(fr); fundingHistory.push({ fundingRate: fr }); if (fundingHistory.length > 100) fundingHistory.shift(); globalData.fundingRate = fr; const el = document.getElementById('funding-rate'); if (el) el.textContent = (fr * 100).toFixed(4) + '% (live)'; const ie = document.getElementById('funding-rate-interp'); if (ie) ie.textContent = fr > 0.0001 ? 'Longs pagam' : fr < -0.0001 ? 'Shorts pagam' : 'Neutro'; }
+         const rA = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=8');
+         if (rA?.ok) { const d = await rA.json(); const avg = d.reduce((s, i) => s + parseFloat(i.fundingRate), 0) / d.length; if (!isNaN(avg)) { const el = document.getElementById('funding-rate-avg'); if (el) el.textContent = (avg * 100).toFixed(4) + '% (live)'; } }
+         const r2 = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT');
+-        if (r2?.ok) { const d = await r2.json(); const oi = parseFloat(d.openInterest) || 0; if (oi > 0) { const el = document.getElementById('open-interest'); if (el) el.textContent = '$' + Number(oi).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' (live)'; const prev = (() => { try { return parseFloat(localStorage.getItem('prevOI')); } catch (_) { return 0; } })() || oi * 0.915; if (prev > 0) { const delta = ((oi - prev) / prev) * 100; globalData.oiDelta = delta; const el2 = document.getElementById('oi-delta'); if (el2) el2.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '% (live)'; const ie = document.getElementById('oi-delta-interp'); if (ie) { if (delta > 10) { ie.textContent = 'OI >10% — divergencia!'; ie.className = 'alert-divergence'; } else { ie.textContent = 'Normal'; ie.className = ''; } } try { localStorage.setItem('prevOI', oi); } catch (_) {} } }
++        if (r2?.ok) {
++            const d = await r2.json(); const oi = parseFloat(d.openInterest) || 0;
++            if (oi > 0) {
++                const el = document.getElementById('open-interest'); if (el) el.textContent = '$' + Number(oi).toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' (live)';
++                // FIX: não fabricar baseline (antes usava oi*0.915 como "prev" fake).
++                // Sem histórico real na primeira carga, reporta honestamente "coletando" em vez de um delta inventado.
++                const stored = (() => { try { return parseFloat(localStorage.getItem('prevOI')); } catch (_) { return NaN; } })();
++                const el2 = document.getElementById('oi-delta');
++                const ie = document.getElementById('oi-delta-interp');
++                if (!isNaN(stored) && stored > 0) {
++                    const delta = ((oi - stored) / stored) * 100;
++                    globalData.oiDelta = delta;
++                    if (el2) el2.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1) + '% (live)';
++                    if (ie) { if (delta > 10) { ie.textContent = 'OI >10% — divergencia!'; ie.className = 'alert-divergence'; } else { ie.textContent = 'Normal'; ie.className = ''; } }
++                } else {
++                    globalData.oiDelta = 0;
++                    if (el2) el2.textContent = 'Coletando baseline... (live)';
++                    if (ie) { ie.textContent = 'Aguardando 2a leitura'; ie.className = ''; }
++                }
++                try { localStorage.setItem('prevOI', oi); } catch (_) {}
++            }
++        }
+         const rLS = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/topLongShortPositionRatio?symbol=BTCUSDT&period=24h&limit=1');
+         if (rLS?.ok) { const d = (await rLS.json())[0]; if (d) { const lp = (+d.longPositionRatio * 100).toFixed(1); const el = document.getElementById('ls-ratio-pos'); if (el) el.textContent = lp + '% / ' + (+d.shortPositionRatio * 100).toFixed(1) + '% (live)'; const ie = document.getElementById('ls-ratio-pos-interp'); if (ie) { if (+lp > 70) { ie.textContent = 'Long extremo (>70%)'; ie.className = 'alert-divergence'; } else { ie.textContent = 'Neutro'; ie.className = ''; } } globalData.rsi = 50 + (+lp - 50) * 0.5; } }
+         const rLA = await fetchWithTimeout('https://fapi.binance.com/fapi/v1/topLongShortAccountRatio?symbol=BTCUSDT&period=24h&limit=1');
+diff -ruN Bitcoin-original/Bitcoin-main/src/engine.js Bitcoin-main/src/engine.js
+--- Bitcoin-original/Bitcoin-main/src/engine.js	2026-07-02 23:19:57.000000000 +0000
++++ Bitcoin-main/src/engine.js	2026-07-02 23:39:23.596983352 +0000
+@@ -2,7 +2,7 @@
+ // ENGINE.JS — Indicadores, Regime, Score, Sinais, Kelly, Optimizer
+ // ================================================================
+ import { CAPITAL, ALERT_COOLDOWN, REGIME_WEIGHTS, EMA50_HISTORY_MAX } from './config.js';
+-import { globalData, currentRegime, candleHistory, ema50History, fundingHistory, alertLog, tradeHistory, filterWeights, lastAlertTime, lastScore, previousScore } from './state.js';
++import { globalData, currentRegime, setCurrentRegime, candleHistory, ema50History, fundingHistory, alertLog, tradeHistory, filterWeights, lastAlertTime, setLastAlertTime, lastScore, previousScore, setPreviousScore } from './state.js';
+ import { sendTelegramAlert, sendStructuredAlert } from './telegram.js';
+ 
+ // ================================================================
+@@ -507,6 +507,10 @@
+ 
+     // Regime
+     const regime = detectMarketRegime(price, ema50, ema50Prev, ema200, ts.adx);
++    // FIX: sem isso, currentRegime ficava travado em 'RANGE' para sempre —
++    // computeScore(), confirmSignalV13() e calculateKellySizing() usavam sempre
++    // os pesos de RANGE mesmo em BULL/BEAR real.
++    setCurrentRegime(regime);
+     return regime;
+ }
+ 
+@@ -519,11 +523,11 @@
+     const price = globalData.price || 60000;
+     const ts = () => new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+ 
+-    if (previousScore < 50 && score >= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+-    else if (previousScore > 50 && score <= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+-    if (previousScore - score >= 20) { sendTelegramAlert('⚠️ <b>RISCO ELEVADO</b>\nScore caiu ' + (previousScore - score) + ' pts\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+-    if (score <= 20) { sendTelegramAlert('🔴 <b>SAIDA TOTAL</b>\nScore: ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+-    if (score >= 85) { sendTelegramAlert('🟢 <b>SINAL FORTE</b>\nScore: ' + score + ' | Regime: ' + currentRegime + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
++    if (previousScore < 50 && score >= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
++    else if (previousScore > 50 && score <= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
++    if (previousScore - score >= 20) { sendTelegramAlert('⚠️ <b>RISCO ELEVADO</b>\nScore caiu ' + (previousScore - score) + ' pts\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
++    if (score <= 20) { sendTelegramAlert('🔴 <b>SAIDA TOTAL</b>\nScore: ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
++    if (score >= 85) { sendTelegramAlert('🟢 <b>SINAL FORTE</b>\nScore: ' + score + ' | Regime: ' + currentRegime + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
+ 
+-    previousScore = score;
++    setPreviousScore(score);
+ }
+diff -ruN Bitcoin-original/Bitcoin-main/src/main.js Bitcoin-main/src/main.js
+--- Bitcoin-original/Bitcoin-main/src/main.js	2026-07-02 23:19:57.000000000 +0000
++++ Bitcoin-main/src/main.js	2026-07-02 23:39:33.305291343 +0000
+@@ -1,5 +1,5 @@
+ import { FAST_INTERVAL, SLOW_INTERVAL, CANDLE_INTERVAL, EMA50_HISTORY_MAX } from './config.js';
+-import { globalData, ema50History, lastScore } from './state.js';
++import { globalData, ema50History, lastScore, setLastScore } from './state.js';
+ import { fetchCandles, fetchTickerData, slowLoop, sendTestAlert } from './api.js';
+ import { processIndicators, computeScore, loadWeights, loadAlertLog, checkAdditionalAlerts } from './engine.js';
+ import { updateScoreDisplay, initScoreChart, updateSummaryCandles, initMTFCharts, updateMTFCharts, updateHeaderUI, updateTelegramStatus, updateTimestamp, updateLiveTime, updateRegimeDisplay } from './ui.js';
+@@ -31,7 +31,7 @@
+             updateRegimeDisplay(regime);
+             const sd = computeScore(globalData);
+             updateScoreDisplay(sd);
+-            lastScore = sd.score;
++            setLastScore(sd.score);
+         }
+ 
+         updateMTFCharts();
+diff -ruN Bitcoin-original/Bitcoin-main/src/state.js Bitcoin-main/src/state.js
+--- Bitcoin-original/Bitcoin-main/src/state.js	2026-07-02 23:19:57.000000000 +0000
++++ Bitcoin-main/src/state.js	2026-07-02 23:38:46.069361716 +0000
+@@ -15,7 +15,11 @@
+ };
+ 
+ // Regime detectado
++// NOTA: variáveis mutáveis abaixo usam setters porque bindings importadas
++// via `import {x}` são somente-leitura em outros módulos — reatribuição direta
++// (ex: `currentRegime = 'BULL'` em outro arquivo) lança TypeError em runtime.
+ export let currentRegime = 'RANGE';
++export function setCurrentRegime(v) { currentRegime = v; }
+ 
+ // Alertas e trades para feedback do Kelly / optimizer
+ export let alertLog = [];
+@@ -32,7 +36,16 @@
+ 
+ // Controle de alertas
+ export let lastAlertTime = 0;
++export function setLastAlertTime(v) { lastAlertTime = v; }
++
+ export let lastScore = 50;
++export function setLastScore(v) { lastScore = v; }
++
+ export let previousScore = 50;
++export function setPreviousScore(v) { previousScore = v; }
++
+ export let currentFundingRate = 0;
++export function setCurrentFundingRate(v) { currentFundingRate = v; }
++
+ export let telegramStatus = 'online';
++export function setTelegramStatus(v) { telegramStatus = v; }
+diff -ruN Bitcoin-original/Bitcoin-main/src/telegram.js Bitcoin-main/src/telegram.js
+--- Bitcoin-original/Bitcoin-main/src/telegram.js	2026-07-02 23:19:57.000000000 +0000
++++ Bitcoin-main/src/telegram.js	2026-07-02 23:39:40.952109868 +0000
+@@ -3,7 +3,7 @@
+ // Separado de api.js para eliminar dependência circular com engine.js
+ // ================================================================
+ import { TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, CAPITAL, ALERT_COOLDOWN } from './config.js';
+-import { telegramStatus, alertLog, lastAlertTime, currentRegime, globalData } from './state.js';
++import { telegramStatus, setTelegramStatus, alertLog, lastAlertTime, currentRegime, globalData } from './state.js';
+ import { calculateKellySizing } from './engine.js';
+ 
+ export async function sendTelegramAlert(message) {
+@@ -12,10 +12,10 @@
+             method: 'POST', headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'HTML' })
+         });
+-        if (r.ok) { telegramStatus = 'online'; return true; }
++        if (r.ok) { setTelegramStatus('online'); return true; }
+         console.warn('Falha alerta:', await r.text());
+-        telegramStatus = 'offline'; return false;
+-    } catch (e) { console.warn('Erro alerta:', e); telegramStatus = 'offline'; return false; }
++        setTelegramStatus('offline'); return false;
++    } catch (e) { console.warn('Erro alerta:', e); setTelegramStatus('offline'); return false; }
+ }
+ 
+ export async function sendStructuredAlert(signalType, score, price, stop, targets, rationale, components, regime) {
