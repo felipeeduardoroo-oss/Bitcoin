@@ -3,7 +3,7 @@
 // ================================================================
 import { CAPITAL, ALERT_COOLDOWN, REGIME_WEIGHTS, EMA50_HISTORY_MAX } from './config.js';
 import { globalData, currentRegime, candleHistory, ema50History, fundingHistory, alertLog, tradeHistory, filterWeights, lastAlertTime, lastScore, previousScore } from './state.js';
-import { sendTelegramAlert, sendStructuredAlert } from './api.js';
+import { sendTelegramAlert, sendStructuredAlert } from './telegram.js';
 
 // ================================================================
 // INDICADORES PUROS
