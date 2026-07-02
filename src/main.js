@@ -1,15 +1,16 @@
 // ================================================================
 // MAIN.JS — Orquestrador: loops, init, event listeners
 // ================================================================
-import { FAST_INTERVAL, SLOW_INTERVAL, CANDLE_INTERVAL } from './config.js';
-import { globalData, currentRegime, ema50History, lastScore, EMA50_HISTORY_MAX } from './state.js';
+import { FAST_INTERVAL, SLOW_INTERVAL, CANDLE_INTERVAL, EMA50_HISTORY_MAX } from './config.js';
+import { globalData, ema50History, lastScore } from './state.js';
 import { fetchCandles, fetchTickerData, slowLoop, sendTestAlert } from './api.js';
 import { processIndicators, computeScore, loadWeights, loadAlertLog, updateFilterWeights } from './engine.js';
-import { updateScoreDisplay, initScoreChart, updateSummaryCandles, initMTFCharts, updateMTFCharts, updateHeaderUI, updateTelegramStatus, updateTimestamp, updateLiveTime, updateRegimeDisplay, showToast } from './ui.js';
+import { updateScoreDisplay, initScoreChart, updateSummaryCandles, initMTFCharts, updateMTFCharts, updateHeaderUI, updateTelegramStatus, updateTimestamp, updateLiveTime, updateRegimeDisplay } from './ui.js';
 import { runBacktest } from './backtest.js';
 import { initStaticCharts } from './charts-static.js';
 
 let isUpdating = false;
+
 // ----------------------------------------------------------------
 // FAST LOOP — 15s: Ticker + Candles 1h + Indicadores + Score
 // ----------------------------------------------------------------
@@ -28,16 +29,17 @@ async function fastLoop() {
         // 2. Candles 1h para indicadores
         const candles = await fetchCandles('BTCUSDT', '1h', 100);
         if (candles?.length > 0) {
-            // Atualizar histórico de EMA50
-            const closes = candles.map(c => c.close);
-            const ema50 = calculateEMA(closes, 50);
-            if (ema50) { ema50History.push(ema50); if (ema50History.length > EMA50_HISTORY_MAX) ema50History.shift(); }
-
-            // Processar indicadores (muta globalData) e retorna regime
+            // processIndicators() calcula EMA50 internamente e armazena em globalData.ema50
             const regime = processIndicators();
-            updateRegimeDisplay(regime);
 
-            // 3. Calcular e renderizar score
+            // Armazenar EMA50 no histórico para detecção de regime
+            if (globalData.ema50) {
+                ema50History.push(globalData.ema50);
+                if (ema50History.length > EMA50_HISTORY_MAX) ema50History.shift();
+            }
+
+            // 3. Calcular e renderizar score (uma unica vez por ciclo)
+            updateRegimeDisplay(regime);
             const sd = computeScore(globalData);
             updateScoreDisplay(sd);
             lastScore = sd.score;
@@ -53,7 +55,7 @@ async function fastLoop() {
 // INIT
 // ----------------------------------------------------------------
 function initApp() {
-    console.log('🚀 BTC Analyzer v13 — Inicializando...');
+    console.log('BTC Analyzer v13 — Inicializando...');
     loadWeights();
     loadAlertLog();
     initStaticCharts();
@@ -63,7 +65,7 @@ function initApp() {
     updateSummaryCandles();
     initMTFCharts();
 
-    // Primeira execução imediata
+    // Primeira execucao imediata
     fastLoop();
     slowLoop();
 
@@ -72,13 +74,12 @@ function initApp() {
     setInterval(slowLoop, SLOW_INTERVAL);
     setInterval(updateSummaryCandles, CANDLE_INTERVAL);
 
-    // Backtest inicial (após 3s para não bloquear)
+    // Backtest inicial (após 3s para não bloquear renderização)
     setTimeout(() => runBacktest(), 3000);
 
     // ----------------------------------------------------------------
     // EVENT LISTENERS
     // ----------------------------------------------------------------
-    // Botão Testar Telegram
     const testBtn = document.getElementById('test-telegram-btn');
     const testLabel = document.getElementById('test-btn-label');
     if (testBtn && testLabel) {
@@ -93,15 +94,13 @@ function initApp() {
         });
     }
 
-    // Botão Backtest
     const backtestBtn = document.getElementById('runBacktestBtn');
     if (backtestBtn) backtestBtn.addEventListener('click', runBacktest);
 
-    // Telegram status inicial
     updateTelegramStatus();
     updateTimestamp();
 
-    console.log('✅ Motor ativo. Fast: ' + (FAST_INTERVAL / 1000) + 's | Slow: ' + (SLOW_INTERVAL / 1000) + 's');
+    console.log('Motor ativo. Fast: ' + (FAST_INTERVAL / 1000) + 's | Slow: ' + (SLOW_INTERVAL / 1000) + 's');
 }
 
 // ----------------------------------------------------------------
