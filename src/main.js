@@ -1,5 +1,5 @@
 import { FAST_INTERVAL, SLOW_INTERVAL, CANDLE_INTERVAL, EMA50_HISTORY_MAX } from './config.js';
-import { globalData, ema50History, lastScore } from './state.js';
+import { globalData, ema50History, lastScore, setLastScore } from './state.js';
 import { fetchCandles, fetchTickerData, slowLoop, sendTestAlert } from './api.js';
 import { processIndicators, computeScore, loadWeights, loadAlertLog, checkAdditionalAlerts } from './engine.js';
 import { updateScoreDisplay, initScoreChart, updateSummaryCandles, initMTFCharts, updateMTFCharts, updateHeaderUI, updateTelegramStatus, updateTimestamp, updateLiveTime, updateRegimeDisplay } from './ui.js';
@@ -31,7 +31,7 @@ async function fastLoop() {
             updateRegimeDisplay(regime);
             const sd = computeScore(globalData);
             updateScoreDisplay(sd);
-            lastScore = sd.score;
+            setLastScore(sd.score);
         }
 
         updateMTFCharts();
