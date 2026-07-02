@@ -15,7 +15,11 @@ export const globalData = {
 };
 
 // Regime detectado
+// NOTA: variáveis mutáveis abaixo usam setters porque bindings importadas
+// via `import {x}` são somente-leitura em outros módulos — reatribuição direta
+// (ex: `currentRegime = 'BULL'` em outro arquivo) lança TypeError em runtime.
 export let currentRegime = 'RANGE';
+export function setCurrentRegime(v) { currentRegime = v; }
 
 // Alertas e trades para feedback do Kelly / optimizer
 export let alertLog = [];
@@ -32,7 +36,16 @@ export const filterWeights = { ...DEFAULT_FILTER_WEIGHTS };
 
 // Controle de alertas
 export let lastAlertTime = 0;
+export function setLastAlertTime(v) { lastAlertTime = v; }
+
 export let lastScore = 50;
+export function setLastScore(v) { lastScore = v; }
+
 export let previousScore = 50;
+export function setPreviousScore(v) { previousScore = v; }
+
 export let currentFundingRate = 0;
+export function setCurrentFundingRate(v) { currentFundingRate = v; }
+
 export let telegramStatus = 'online';
+export function setTelegramStatus(v) { telegramStatus = v; }
