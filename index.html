@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dashboard institucional com score de mercado, alertas Telegram e backtest para criptoativos." />
+    <title>Dashboard Institucional — Score + Alertas + Backtest</title>
+
+    <!-- Fallback caso CDN falhe -->
+    <script>
+        window.ChartError = false;
+        window.LWChartError = false;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"
+            onerror="window.ChartError=true; console.error('Chart.js CDN falhou');"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"
+            onerror="window.LWChartError=true; console.error('Lightweight Charts CDN falhou');"></script>
+
+    <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+    <a href="#main-content" class="skip-nav">Pular para o conteudo principal</a>
+
+    <!-- Toast container -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header role="banner">
+            <div class="header-content">
+                <h1 class="header-title">RELATORIO INSTITUCIONAL — Score + Alertas + Backtest</h1>
+                <div class="header-meta" aria-label="Metadados do relatorio">
+                    <div class="badge" id="header-timestamp" aria-live="polite">Carregando...</div>
+                    <div class="badge sentiment-bearish" id="header-sentiment">SENTIMENTO: PESSIMISTA</div>
+                    <div class="badge extreme-fear" id="header-fng">FEAR & GREED: 18 (Extreme Fear)</div>
+                    <div class="badge badge-regime range" id="header-regime">REGIME: RANGE</div>
+                    <span class="live-indicator" aria-hidden="true">HYBRID</span>
+                    <span class="status-badge" id="status-badge">ESTATICO</span>
+                    <span class="telegram-badge" id="telegram-badge" aria-live="polite">
+                        <span class="telegram-status" id="telegram-status-dot" role="status" aria-label="Status Telegram"></span> TELEGRAM
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTEUDO PRINCIPAL -->
+        <main id="main-content">
+
+            <!-- SCORE CARD -->
+            <section aria-labelledby="score-heading">
+                <div class="score-card">
+                    <div class="score-label" id="score-heading">Score Institucional</div>
+                    <div class="score-value" id="score-value" style="color:var(--accent-yellow);" role="status" aria-live="polite" aria-atomic="true">50</div>
+                    <div class="score-bar-container" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Score institucional">
+                        <div class="score-bar-fill" id="score-bar" style="width:50%;background:var(--accent-yellow);"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.8em;color:var(--text-muted);" aria-hidden="true">
+                        <span>VENDA (0)</span><span>NEUTRO (50)</span><span>COMPRA (100)</span>
+                    </div>
+                    <div class="score-details">
+                        <div class="score-detail-item"><span class="label">Tendencia</span> <span class="value" id="score-trend">--</span></div>
+                        <div class="score-detail-item"><span class="label">Momentum</span> <span class="value" id="score-momentum">--</span></div>
+                        <div class="score-detail-item"><span class="label">Estrutura</span> <span class="value" id="score-structure">--</span></div>
+                        <div class="score-detail-item"><span class="label">On-Chain</span> <span class="value" id="score-onchain">--</span></div>
+                        <div class="score-detail-item"><span class="label">Volume</span> <span class="value" id="score-volume">--</span></div>
+                        <div class="score-detail-item"><span class="label">OI Delta</span> <span class="value" id="score-oi">--</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SCORE HISTORY CHART -->
+            <section class="score-chart-section" aria-labelledby="score-history-heading">
+                <div class="score-chart-header">
+                    <h3 id="score-history-heading">HISTORICO DO SCORE</h3>
+                    <div id="score-tf-buttons">
+                        <button type="button" class="tf-btn active" data-tf="1h">1H</button>
+                        <button type="button" class="tf-btn" data-tf="6h">6H</button>
+                        <button type="button" class="tf-btn" data-tf="12h">12H</button>
+                        <button type="button" class="tf-btn" data-tf="24h">24H</button>
+                        <button type="button" class="tf-btn" data-tf="7d">7D</button>
+                    </div>
+                </div>
+                <div class="score-chart-wrapper">
+                    <canvas id="scoreHistoryChart" aria-label="Historico do score"></canvas>
+                </div>
+            </section>
+
+            <!-- RESUMO EXECUTIVO -->
+            <section aria-labelledby="summary-heading">
+                <h2 class="section-title" id="summary-heading">RESUMO EXECUTIVO</h2>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Bitcoin</h3>
+                        <div class="value negative" id="btc-price">$60.000</div>
+                        <div class="subtext" id="btc-change">-5,94% (referencia)</div>
+                        <span class="source-with-time" id="btc-source">Binance • estatico</span>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Ethereum</h3>
+                        <div class="value negative" id="eth-price">$1.573,53</div>
+                        <div class="subtext" id="eth-change">-0,15% (referencia)</div>
+                        <span class="source-with-time" id="eth-source">CoinGecko • estatico</span>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Solana</h3>
+                        <div class="value negative" id="sol-price">$170,00</div>
+                        <div class="subtext" id="sol-change">-2,30% (referencia)</div>
+                        <span class="source-with-time" id="sol-source">CoinGecko • estatico</span>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Sentiment Macro</h3>
+                        <div class="value negative" id="macro-summary">DXY 101,37 | US10Y 4,28%</div>
+                        <div class="subtext" id="macro-status">Referencia</div>
+                        <span class="source-with-time" id="macro-source">FRED • estatico</span>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Tether Premium</h3>
+                        <div class="value negative" id="tether-premium">-0,05%</div>
+                        <div class="subtext">USDT/BRL vs USDC/BRL</div>
+                        <span class="source-with-time" id="tether-source">Binance • estatico</span>
+                    </div>
+                </div>
+                <div id="update-info" style="margin-top:10px;font-size:0.85em;color:var(--text-muted);text-align:right;">
+                    Ultima atualizacao: <span id="last-update" aria-live="polite">--</span>
+                </div>
+            </section>
+
+            <!-- CANDLESTICKS RESUMO -->
+            <section aria-labelledby="candles-heading">
+                <h2 class="section-title" id="candles-heading">CANDLESTICKS MULTI-ATIVO (LIVE)</h2>
+                <div class="candles-grid">
+                    <div class="candle-card">
+                        <h3>Bitcoin (BTC/USDT)</h3>
+                        <div class="candle-stats" id="btc-stats">
+                            <span class="stat" id="btc-stat-1d"><span class="label">1D</span> --</span>
+                            <span class="stat" id="btc-stat-1s"><span class="label">1S</span> --</span>
+                            <span class="stat" id="btc-stat-1m"><span class="label">1M</span> --</span>
+                        </div>
+                        <div id="candle-btc" class="candle-container" aria-label="Candlestick Bitcoin"></div>
+                        <div class="candle-legend" aria-hidden="true"><span><span class="up">Alta</span></span><span><span class="down">Baixa</span></span></div>
+                        <span class="source-with-time" id="candle-btc-source">Binance • 10s</span>
+                    </div>
+                    <div class="candle-card">
+                        <h3>Ethereum (ETH/USDT)</h3>
+                        <div class="candle-stats" id="eth-stats">
+                            <span class="stat" id="eth-stat-1d"><span class="label">1D</span> --</span>
+                            <span class="stat" id="eth-stat-1s"><span class="label">1S</span> --</span>
+                            <span class="stat" id="eth-stat-1m"><span class="label">1M</span> --</span>
+                        </div>
+                        <div id="candle-eth" class="candle-container" aria-label="Candlestick Ethereum"></div>
+                        <div class="candle-legend" aria-hidden="true"><span><span class="up">Alta</span></span><span><span class="down">Baixa</span></span></div>
+                        <span class="source-with-time" id="candle-eth-source">Binance • 10s</span>
+                    </div>
+                    <div class="candle-card">
+                        <h3>Solana (SOL/USDT)</h3>
+                        <div class="candle-stats" id="sol-stats">
+                            <span class="stat" id="sol-stat-1d"><span class="label">1D</span> --</span>
+                            <span class="stat" id="sol-stat-1s"><span class="label">1S</span> --</span>
+                            <span class="stat" id="sol-stat-1m"><span class="label">1M</span> --</span>
+                        </div>
+                        <div id="candle-sol" class="candle-container" aria-label="Candlestick Solana"></div>
+                        <div class="candle-legend" aria-hidden="true"><span><span class="up">Alta</span></span><span><span class="down">Baixa</span></span></div>
+                        <span class="source-with-time" id="candle-sol-source">Binance • 10s</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MTF INTRADAY BTC -->
+            <section aria-labelledby="mtf-heading">
+                <h2 class="section-title" id="mtf-heading">INTRADAY BTC — MULTI-TIMEFRAME</h2>
+                <div class="candles-grid">
+                    <div class="candle-card"><h3>BTC 1 Minuto</h3><div id="chart-1m" class="candle-container" aria-label="BTC 1m"></div></div>
+                    <div class="candle-card"><h3>BTC 5 Minutos</h3><div id="chart-5m" class="candle-container" aria-label="BTC 5m"></div></div>
+                    <div class="candle-card"><h3>BTC 15 Minutos</h3><div id="chart-15m" class="candle-container" aria-label="BTC 15m"></div></div>
+                </div>
+            </section>
+
+            <!-- ON-CHAIN & DERIVADOS -->
+            <section aria-labelledby="onchain-heading">
+                <h2 class="section-title" id="onchain-heading">ANALISE ON-CHAIN & DERIVADOS</h2>
+                <div class="table-wrapper">
+                    <table aria-label="Metricas on-chain e derivados">
+                        <caption>Metricas on-chain e derivativos atualizadas em tempo real</caption>
+                        <thead><tr><th scope="col">Metrica</th><th scope="col">Valor</th><th scope="col">Interpretacao</th><th scope="col">Fonte</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>MVRV (BTC)</strong></td><td id="mvrv">1,15</td><td id="mvrv-interp">Acima de 1.0</td><td><span class="data-source" id="mvrv-source">BitView • estatico</span></td></tr>
+                            <tr><td><strong>MVRV STH</strong></td><td id="mvrv-sth">0,84</td><td id="mvrv-sth-interp">STH em perda</td><td><span class="data-source" id="mvrv-sth-source">BitView • estatico</span></td></tr>
+                            <tr><td><strong>SOPR</strong></td><td id="sopr">0,80</td><td id="sopr-interp">Weakness</td><td><span class="data-source" id="sopr-source">BitView • estatico</span></td></tr>
+                            <tr><td><strong>aSOPR 7D</strong></td><td id="asopr">0,99</td><td id="asopr-interp">Ajustado fraco</td><td><span class="data-source" id="asopr-source">BitView • estatico</span></td></tr>
+                            <tr><td><strong>Realized Price</strong></td><td id="realized-price">$53.600</td><td>Preco medio de custo</td><td><span class="data-source" id="realized-price-source">BitView • estatico</span></td></tr>
+                            <tr><td><strong>ETF Flows (BTC)</strong></td><td id="etf-btc-live"><strong>-$445M</strong></td><td id="etf-btc-interp">Saida</td><td><span class="data-source" id="etf-btc-source">Farside • estatico</span></td></tr>
+                            <tr><td><strong>ETF Flows (ETH)</strong></td><td id="etf-eth-live"><strong>-$12,85M</strong></td><td id="etf-eth-interp">Saida</td><td><span class="data-source" id="etf-eth-source">Farside • estatico</span></td></tr>
+                            <tr><td><strong>Exchange Netflow</strong></td><td id="exchange-netflow">7.247 BTC</td><td id="exchange-netflow-interp">Entrada em exchanges</td><td><span class="data-source" id="exchange-netflow-source">CoinGlass • estatico</span></td></tr>
+                            <tr><td><strong>Funding Rate</strong></td><td id="funding-rate">0,0043%</td><td id="funding-rate-interp">Neutro</td><td><span class="data-source" id="funding-rate-source">Binance • estatico</span></td></tr>
+                            <tr><td><strong>Funding Rate (med. 8h)</strong></td><td id="funding-rate-avg">0,0038%</td><td>Suavizado</td><td><span class="data-source" id="funding-rate-avg-source">Binance • estatico</span></td></tr>
+                            <tr><td><strong>Open Interest</strong></td><td id="open-interest">$20,69B</td><td id="open-interest-interp">Moderado</td><td><span class="data-source" id="open-interest-source">Binance • estatico</span></td></tr>
+                            <tr><td><strong>OI Delta (24h)</strong></td><td id="oi-delta">+8,5%</td><td id="oi-delta-interp">Variacao normal</td><td><span class="data-source" id="oi-delta-source">Binance • estatico</span></td></tr>
+                            <tr><td><strong>Basis (perp vs spot)</strong></td><td id="basis">+0,15%</td><td>Premio moderado</td><td><span class="data-source" id="basis-source">Binance/CoinGecko • estatico</span></td></tr>
+                            <tr><td><strong>Long/Short (posicoes)</strong></td><td id="ls-ratio-pos">60% / 40%</td><td id="ls-ratio-pos-interp">Neutro</td><td><span class="data-source" id="ls-pos-source">Binance • estatico</span></td></tr>
+                            <tr><td><strong>Long/Short (contas)</strong></td><td id="ls-ratio-acc">55% / 45%</td><td id="ls-ratio-acc-interp">Levemente long</td><td><span class="data-source" id="ls-acc-source">Binance • estatico</span></td></tr>
+                            <tr><td><strong>BTC Hashrate</strong></td><td id="btc-hashrate">893 EH/s</td><td>Elevado</td><td><span class="data-source" id="hashrate-source">Blockchain.com • estatico</span></td></tr>
+                            <tr><td><strong>ETH Gas Price</strong></td><td id="eth-gas">5,68 Gwei</td><td>Baixo</td><td><span class="data-source" id="gas-source">Etherscan • estatico</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-wrapper" id="chart-etf-wrapper"><canvas id="chart_etf_flows" aria-label="ETF Flows"></canvas></div>
+            </section>
+
+            <!-- CONFIRMACAO DE FUNDO -->
+            <section aria-labelledby="confirmation-heading">
+                <h2 class="section-title" id="confirmation-heading">PAINEL DE CONFIRMACAO DE FUNDO</h2>
+                <div class="confirmation-panel">
+                    <div class="confirmation-grid">
+                        <div class="confirmation-pillar"><div class="pillar-status" id="p-mvrv">&#10060;</div><div class="pillar-name">MVRV Extremo</div></div>
+                        <div class="confirmation-pillar"><div class="pillar-status" id="p-fear">&#9989;</div><div class="pillar-name">Fear Extremo</div></div>
+                        <div class="confirmation-pillar"><div class="pillar-status" id="p-sth">&#9989;</div><div class="pillar-name">STH Capitulacao</div></div>
+                        <div class="confirmation-pillar"><div class="pillar-status" id="p-smart">&#10060;</div><div class="pillar-name">Smart Money</div></div>
+                        <div class="confirmation-pillar"><div class="pillar-status" id="p-macro">&#10060;</div><div class="pillar-name">Macro Suporta</div></div>
+                    </div>
+                    <div class="confirmation-description"><strong>Analise:</strong> 3/5 pilares confirmam fundo. Mercado em capitulacao tatica.</div>
+                </div>
+            </section>
+
+            <!-- MACRO -->
+            <section aria-labelledby="macro-heading">
+                <h2 class="section-title" id="macro-heading">INDICADORES MACROECONOMICOS</h2>
+                <div class="table-wrapper">
+                    <table aria-label="Indicadores macroeconomicos">
+                        <caption>Indicadores macroeconomicos de referencia</caption>
+                        <thead><tr><th scope="col">Indicador</th><th scope="col">Valor</th><th scope="col">Interpretacao</th><th scope="col">Fonte</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>DXY</strong></td><td>101,37</td><td>USD Forte</td><td><span class="data-source" id="dxy-source">FRED</span></td></tr>
+                            <tr><td><strong>Fed Rate</strong></td><td>3,62%</td><td>Juros restritivos</td><td><span class="data-source" id="fed-source">FRED</span></td></tr>
+                            <tr><td><strong>US 10Y</strong></td><td>4,28%</td><td>Yields elevados</td><td><span class="data-source" id="us10y-source">FRED</span></td></tr>
+                            <tr><td><strong>VIX</strong></td><td>18,41</td><td>Estresse</td><td><span class="data-source" id="vix-source">FRED</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-wrapper" id="chart-macro-wrapper"><canvas id="chart_macro_rates" aria-label="Macro rates"></canvas></div>
+            </section>
+
+            <!-- BALEIAS -->
+            <section aria-labelledby="whale-heading">
+                <h2 class="section-title" id="whale-heading">ATIVIDADE DE BALEIAS</h2>
+                <div class="whale-activity">
+                    <div class="whale-card">
+                        <div class="whale-header"><span class="whale-entity">Bitcoin</span><span class="whale-action accumulating">ACUMULANDO</span></div>
+                        <div class="whale-value">US$ 700 Milhoes</div>
+                        <div class="whale-transaction">Retirada de 11.400+ BTC para cold storage</div>
+                    </div>
+                    <div class="whale-card">
+                        <div class="whale-header"><span class="whale-entity">Ethereum</span><span class="whale-action distributing">DISTRIBUINDO</span></div>
+                        <div class="whale-value">US$ 27,4 Milhoes</div>
+                        <div class="whale-transaction">Venda apos 8 anos de hodl</div>
+                    </div>
+                    <div class="whale-card">
+                        <div class="whale-header"><span class="whale-entity">Solana</span><span class="whale-action accumulating">ACUMULANDO</span></div>
+                        <div class="whale-value">US$ 445,56 Milhoes</div>
+                        <div class="whale-transaction">Transferencia de 6,27M SOL da Binance</div>
+                    </div>
+                </div>
+                <div class="chart-wrapper" id="chart-whale-wrapper"><canvas id="chart_whale_flow" aria-label="Whale flow"></canvas></div>
+                <div class="confirmation-description" id="whale-summary"><strong>Smart Money Direction:</strong> BTC acumulando, ETH distribuindo, SOL acumulando.</div>
+            </section>
+
+            <!-- DEFI -->
+            <section aria-labelledby="defi-heading">
+                <h2 class="section-title" id="defi-heading">STABLECOINS & DEFI</h2>
+                <div class="table-wrapper">
+                    <table aria-label="Stablecoins e DeFi">
+                        <caption>Stablecoins e metricas DeFi</caption>
+                        <thead><tr><th scope="col">Metrica</th><th scope="col">Valor</th><th scope="col">Interpretacao</th><th scope="col">Fonte</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Stablecoin Supply</strong></td><td id="stablecoin-supply">$320B</td><td>Liquidez disponivel</td><td><span class="data-source" id="stablecoin-source">DefiLlama</span></td></tr>
+                            <tr><td><strong>DeFi TVL</strong></td><td id="defi-tvl">$70B</td><td id="defi-tvl-interp">Comprimido</td><td><span class="data-source" id="defi-tvl-source">DefiLlama</span></td></tr>
+                            <tr><td><strong>DeFi TVL 24h</strong></td><td id="defi-tvl-change">-0,02%</td><td>Estavel</td><td><span class="data-source" id="defi-change-source">DefiLlama</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SCORES -->
+            <section aria-labelledby="scores-heading">
+                <h2 class="section-title" id="scores-heading">SCORES DE ANALISE</h2>
+                <div class="score-container">
+                    <div class="score-box"><div class="score-label">Risk Score</div><div class="score-value" style="color:var(--accent-red);">72/100</div><div class="score-bar"><div class="score-fill" style="width:72%;background:linear-gradient(90deg,var(--accent-red),var(--accent-yellow));"></div></div></div>
+                    <div class="score-box"><div class="score-label">Confidence</div><div class="score-value" style="color:var(--accent-green);">85/100</div><div class="score-bar"><div class="score-fill" style="width:85%;background:var(--accent-green);"></div></div></div>
+                    <div class="score-box"><div class="score-label">Entry Score</div><div class="score-value" style="color:var(--accent-yellow);">48/100</div><div class="score-bar"><div class="score-fill" style="width:48%;background:var(--accent-yellow);"></div></div></div>
+                    <div class="score-box"><div class="score-label">Exit Score</div><div class="score-value" style="color:var(--accent-red);">62/100</div><div class="score-bar"><div class="score-fill" style="width:62%;background:var(--accent-red);"></div></div></div>
+                </div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:30px;">
+                    <h3 style="color:var(--text-light);margin-bottom:16px;">Conviction</h3>
+                    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                        <span class="conviction-badge conviction-bearish">BEARISH CONVICTION</span>
+                        <span class="on-chain-cycle">Ciclo On-Chain: MARKDOWN</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CENARIOS -->
+            <section aria-labelledby="scenarios-heading">
+                <h2 class="section-title" id="scenarios-heading">CENARIOS & MATRIZ DE APORTE</h2>
+                <div class="chart-wrapper" id="chart-scenarios-wrapper"><canvas id="chart_scenarios" aria-label="Cenarios"></canvas></div>
+                <div class="chart-wrapper" id="chart-allocation-wrapper"><canvas id="chart_allocation" aria-label="Alocacao"></canvas></div>
+            </section>
+
+            <!-- BACKTEST -->
+            <section aria-labelledby="backtest-heading">
+                <h2 class="section-title" id="backtest-heading">BACKTEST — ULTIMOS 30 DIAS</h2>
+                <div class="backtest-section">
+                    <div class="backtest-header">
+                        <div>
+                            <span style="color:var(--text-muted);font-size:0.9em;">Capital: <strong style="color:var(--text-light);">US$ 1.000</strong></span>
+                            <span style="color:var(--text-muted);font-size:0.9em;margin-left:20px;">Ativo: <strong style="color:var(--text-light);">BTC/USDT</strong></span>
+                        </div>
+                        <button type="button" class="btn-backtest-run" id="runBacktestBtn">Executar Backtest</button>
+                    </div>
+                    <div id="backtestResults" aria-live="polite">
+                        <div class="backtest-loading"><div class="spinner" aria-hidden="true"></div><p>Carregando dados historicos...</p></div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer role="contentinfo">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Metodologia</h4>
+                    <p>Score institucional com regime detection, Kelly sizing, MTF alignment e divergencias multi-indicador. Backtest com dados Binance (30 dias).</p>
+                    <p><strong>Ultima atualizacao:</strong> <span id="live-update-time" aria-live="polite">--</span></p>
+                    <p><strong>Status Telegram:</strong> <span id="telegram-status-text" aria-live="polite">Conectado</span></p>
+                </div>
+                <div class="disclaimer"><strong>AVISO LEGAL</strong><br>Uso exclusivamente informativo. Nao e recomendacao de investimento.</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- BOTAO FLUTUANTE TELEGRAM -->
+    <button type="button" class="telegram-test-btn" id="test-telegram-btn" aria-label="Testar alerta Telegram">
+        <span id="test-btn-label">Testar Alerta</span>
+    </button>
+
+    <!-- PONTO DE ENTRADA DO MODULO PRINCIPAL -->
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
