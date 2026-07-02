@@ -10,7 +10,6 @@ import { runBacktest } from './backtest.js';
 import { initStaticCharts } from './charts-static.js';
 
 let isUpdating = false;
-
 // ----------------------------------------------------------------
 // FAST LOOP — 15s: Ticker + Candles 1h + Indicadores + Score
 // ----------------------------------------------------------------
@@ -18,7 +17,7 @@ async function fastLoop() {
     if (isUpdating) return;
     isUpdating = true;
     try {
-        // 1. Ticker rápido
+        // 1. Ticker rapido
         const ticker = await fetchTickerData();
         if (ticker) {
             updateHeaderUI(ticker);
@@ -29,14 +28,12 @@ async function fastLoop() {
         // 2. Candles 1h para indicadores
         const candles = await fetchCandles('BTCUSDT', '1h', 100);
         if (candles?.length > 0) {
-            // Atualizar histórico
+            // Atualizar histórico de EMA50
             const closes = candles.map(c => c.close);
-            const ema50 = closes.length >= 50 ? require('./engine.js').calculateEMA(closes, 50) : null;
+            const ema50 = calculateEMA(closes, 50);
             if (ema50) { ema50History.push(ema50); if (ema50History.length > EMA50_HISTORY_MAX) ema50History.shift(); }
 
-            // Processar indicadores (muta globalData)
-            const { calculateEMA } = require('./engine.js');
-            // Importação direta já feita no topo — usar função exportada
+            // Processar indicadores (muta globalData) e retorna regime
             const regime = processIndicators();
             updateRegimeDisplay(regime);
 
