@@ -1,4 +1,4 @@
-import { FAST_INTERVAL, SLOW_INTERVAL, CANDLE_INTERVAL, EMA50_HISTORY_MAX } from './config.js';
+import { FAST_INTERVAL, SLOW_INTERVAL, CRIAR_INTERVAL, EMA50_HISTORY_MAX } from './config.js';
 import { globalData, ema50History, lastScore, setLastScore } from './state.js';
 import { fetchCandles, fetchTickerData, slowLoop, sendTestAlert } from './api.js';
 import { processIndicators, computeScore, loadWeights, loadAlertLog, checkAdditionalAlerts } from './engine.js';
@@ -53,7 +53,7 @@ function initApp() {
 
     setInterval(fastLoop, FAST_INTERVAL);
     setInterval(slowLoop, SLOW_INTERVAL);
-    setInterval(updateSummaryCandles, CANDLE_INTERVAL);
+    setInterval(updateSummaryCandles, CRIAR_INTERVAL);
 
     setTimeout(() => runBacktest(), 3000);
 
@@ -83,6 +83,3 @@ if (document.readyState === 'loading') {
 } else {
     initApp();
 }
-
-</body>
-</html>
