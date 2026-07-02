@@ -83,3 +83,6 @@ if (document.readyState === 'loading') {
 } else {
     initApp();
 }
+
+</body>
+</html>
