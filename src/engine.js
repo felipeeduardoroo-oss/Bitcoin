@@ -2,8 +2,9 @@
 // ENGINE.JS — Indicadores, Regime, Score, Sinais, Kelly, Optimizer
 // ================================================================
 import { CAPITAL, ALERT_COOLDOWN, REGIME_WEIGHTS, EMA50_HISTORY_MAX } from './config.js';
-import { globalData, currentRegime, setCurrentRegime, candleHistory, ema50History, fundingHistory, alertLog, tradeHistory, filterWeights, lastAlertTime, setLastAlertTime, lastScore, previousScore, setPreviousScore } from './state.js';
+import { globalData, currentRegime, candleHistory, ema50History, fundingHistory, alertLog, tradeHistory, filterWeights, lastAlertTime, lastScore, previousScore } from './state.js';
 import { sendTelegramAlert, sendStructuredAlert } from './telegram.js';
+import { calculateKellySizing } from './utils/kelly.js';
 
 // ================================================================
 // INDICADORES PUROS
@@ -350,22 +351,7 @@ export function generateScaledTargetsV8(entry, stop, signalType, volRegime, regi
 }
 
 // ================================================================
-// KELLY SIZING
-// ================================================================
-export function calculateKellySizing(regime) {
-    const base = regime === 'RANGE' ? 0.005 : 0.02;
-    const max = regime === 'RANGE' ? 0.01 : 0.05;
-    const rt = alertLog.filter(t => t.win !== null && t.regime === regime).slice(-50);
-    if (rt.length < 10) return base;
-    const w = rt.filter(t => t.win).length, wr = w / rt.length;
-    const aw = rt.filter(t => t.win).reduce((s, t) => s + (t.pnl || 0), 0) / Math.max(1, w);
-    const al = Math.abs(rt.filter(t => !t.win).reduce((s, t) => s + (t.pnl || 0), 0)) / Math.max(1, rt.length - w);
-    const k = aw > 0 ? (wr * aw - (1 - wr) * al) / aw : 0;
-    return clamp(Math.max(0, k) * 0.25, 0.005, max);
-}
-
-// ================================================================
-// OTIMIZAÇÃO DE PESOS (Simulated Annealing)
+// OTIMIZAÇÃO DE PESOS (Simulated Annealing) — sem Kelly aqui
 // ================================================================
 function evalWeights(weights, dataset) {
     const names = Object.keys(filterWeights);
@@ -384,7 +370,6 @@ export function optimizeWeights(history) {
     const sh = [...history].sort(() => Math.random() - 0.5);
     const ti = Math.floor(sh.length * 0.7), train = sh.slice(0, ti), val = sh.slice(ti);
     const names = Object.keys(filterWeights);
-    // FIX: normalizar pesos iniciais
     let rawInit = names.map(n => filterWeights[n] || 0.1);
     const sumInit = rawInit.reduce((a, b) => a + b, 0);
     let bestW = rawInit.map(w => w / sumInit);
@@ -432,7 +417,6 @@ export function loadAlertLog() {
 // SCORE INSTITUCIONAL V13 (com regime weights + adaptação por histórico)
 // ================================================================
 export function computeScore(data) {
-    // Adaptar pesos pelo histórico de acerto
     const hist = alertLog.filter(t => t.win !== null);
     let cw = { trend: 0.25, momentum: 0.20, structure: 0.15, onchain: 0.10, volume: 0.15, oi: 0.15 };
     if (hist.length > 20) {
@@ -500,17 +484,11 @@ export function processIndicators() {
     globalData.avgVolume = candleHistory.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
     globalData.volumeRel = globalData.avgVolume > 0 ? globalData.volume / globalData.avgVolume : 1;
 
-    // Suporte/resistência dinâmico
     const sr = getHorizontalSR(candleHistory);
     globalData.support = sr.support || 58000;
     globalData.resistance = sr.resistance || 70000;
 
-    // Regime
     const regime = detectMarketRegime(price, ema50, ema50Prev, ema200, ts.adx);
-    // FIX: sem isso, currentRegime ficava travado em 'RANGE' para sempre —
-    // computeScore(), confirmSignalV13() e calculateKellySizing() usavam sempre
-    // os pesos de RANGE mesmo em BULL/BEAR real.
-    setCurrentRegime(regime);
     return regime;
 }
 
@@ -523,11 +501,11 @@ export function checkAdditionalAlerts(score) {
     const price = globalData.price || 60000;
     const ts = () => new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-    if (previousScore < 50 && score >= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
-    else if (previousScore > 50 && score <= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
-    if (previousScore - score >= 20) { sendTelegramAlert('⚠️ <b>RISCO ELEVADO</b>\nScore caiu ' + (previousScore - score) + ' pts\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
-    if (score <= 20) { sendTelegramAlert('🔴 <b>SAIDA TOTAL</b>\nScore: ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
-    if (score >= 85) { sendTelegramAlert('🟢 <b>SINAL FORTE</b>\nScore: ' + score + ' | Regime: ' + currentRegime + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); setLastAlertTime(now); }
+    if (previousScore < 50 && score >= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+    else if (previousScore > 50 && score <= 50) { sendTelegramAlert('🔄 <b>MUDANCA DE TENDENCIA</b>\nScore: ' + previousScore + ' → ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+    if (previousScore - score >= 20) { sendTelegramAlert('⚠️ <b>RISCO ELEVADO</b>\nScore caiu ' + (previousScore - score) + ' pts\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+    if (score <= 20) { sendTelegramAlert('🔴 <b>SAIDA TOTAL</b>\nScore: ' + score + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
+    if (score >= 85) { sendTelegramAlert('🟢 <b>SINAL FORTE</b>\nScore: ' + score + ' | Regime: ' + currentRegime + '\n💰 BTC: $' + price.toFixed(2) + '\n⏰ ' + ts()); lastAlertTime = now; }
 
-    setPreviousScore(score);
+    previousScore = score;
 }
