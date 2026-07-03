@@ -90,7 +90,6 @@ export function initScoreChart() {
         options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => 'Score: ' + c.parsed.y.toFixed(0), title: i => new Date(i[0].parsed.x).toLocaleString('pt-BR') } } }, scales: { x: { type: 'linear', grid: { color: 'rgba(44,62,80,0.3)' }, ticks: { color: '#95a5a6', maxTicksLimit: 12, callback: v => new Date(v).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) } }, y: { min: 0, max: 100, grid: { color: 'rgba(44,62,80,0.3)' }, ticks: { color: '#95a5a6' } } } },
         plugins: [thresholdPlugin]
     });
-    // Timeframe buttons
     document.addEventListener('click', function (e) {
         const btn = e.target.closest('#score-tf-buttons .tf-btn'); if (!btn) return;
         btn.closest('#score-tf-buttons').querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
