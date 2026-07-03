@@ -1,15 +1,16 @@
 import { FAST_INTERVAL, SLOW_INTERVAL, CANDLE_INTERVAL, EMA50_HISTORY_MAX } from './config.js';
-import { globalData, ema50History, setLastScore } from './state.js';
-import { fetchCandles, fetchTickerData, slowLoop, sendTestAlert } from './api.js';
+import { globalData, ema50History, lastScore } from './state.js';
+import { fetchCandles, fetchTickerData, slowLoop } from './api.js';
 import { processIndicators, computeScore, loadWeights, loadAlertLog, checkAdditionalAlerts } from './engine.js';
 import { updateScoreDisplay, initScoreChart, updateSummaryCandles, initMTFCharts, updateMTFCharts, updateHeaderUI, updateTelegramStatus, updateTimestamp, updateLiveTime, updateRegimeDisplay } from './ui.js';
 import { runBacktest } from './backtest.js';
 import { initStaticCharts } from './charts-static.js';
+import { sendTestAlert } from './telegram.js';
 
 let isUpdating = false;
 
 async function fastLoop() {
-    if (isvisited) return;
+    if (isUpdating) return;
     isUpdating = true;
     try {
         const ticker = await fetchTickerData();
@@ -31,7 +32,7 @@ async function fastLoop() {
             updateRegimeDisplay(regime);
             const sd = computeScore(globalData);
             updateScoreDisplay(sd);
-            setLastScore(sd.score);
+            lastScore = sd.score;
         }
 
         updateMTFCharts();
@@ -53,7 +54,7 @@ function initApp() {
 
     setInterval(fastLoop, FAST_INTERVAL);
     setInterval(slowLoop, SLOW_INTERVAL);
-    setInterval(updateSummaryCandles, CRIAR_INTERVAL);
+    setInterval(updateSummaryCandles, CANDLE_INTERVAL);
 
     setTimeout(() => runBacktest(), 3000);
 
