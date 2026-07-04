@@ -8,9 +8,6 @@
     </script>
     <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js">
     </script>
-    <!-- ============================================================
-         ESTILOS (MANTIDOS – NENHUMA ALTERAÇÃO)
-         ============================================================ -->
     <style>
         /* ============================================================
            ESTILOS (MANTIDOS – NENHUMA ALTERAÇÃO)
@@ -1067,7 +1064,7 @@
         </section>
 
         <!-- ============================================================
-        RESUMO EXECUTIVO (MANTIDO)
+        RESUMO EXECUTIVO
         ============================================================ -->
         <section>
             <h2 class="section-title">📌 RESUMO EXECUTIVO</h2>
@@ -1109,7 +1106,7 @@
         </section>
 
         <!-- ============================================================
-        GRÁFICOS DE CANDLESTICK (MANTIDO)
+        GRÁFICOS DE CANDLESTICK
         ============================================================ -->
         <section>
             <h2 class="section-title">🕯️ GRÁFICOS DE CANDLESTICK (LIVE)</h2>
@@ -1163,7 +1160,7 @@
         </section>
 
         <!-- ============================================================
-        ON-CHAIN ANALYSIS (MANTIDO)
+        ON-CHAIN ANALYSIS
         ============================================================ -->
         <section>
             <h2 class="section-title">⛓️ ANÁLISE ON-CHAIN &amp; DERIVADOS</h2>
@@ -1298,7 +1295,7 @@
         </section>
 
         <!-- ============================================================
-        PAINEL DE CONFIRMAÇÃO (MANTIDO)
+        PAINEL DE CONFIRMAÇÃO
         ============================================================ -->
         <section>
             <h2 class="section-title">✅ PAINEL DE CONFIRMAÇÃO DE FUNDO</h2>
@@ -1315,7 +1312,7 @@
         </section>
 
         <!-- ============================================================
-        MACRO INDICADORES (MANTIDO)
+        MACRO INDICADORES
         ============================================================ -->
         <section>
             <h2 class="section-title">🌍 INDICADORES MACROECONÔMICOS (referência)</h2>
@@ -1336,7 +1333,7 @@
         </section>
 
         <!-- ============================================================
-        WHALE ACTIVITY (MANTIDO)
+        WHALE ACTIVITY
         ============================================================ -->
         <section>
             <h2 class="section-title">🐋 ATIVIDADE DE BALEIAS (referência)</h2>
@@ -1365,7 +1362,7 @@
         </section>
 
         <!-- ============================================================
-        STABLECOINS & DEFI (MANTIDO)
+        STABLECOINS & DEFI
         ============================================================ -->
         <section>
             <h2 class="section-title">💰 STABLECOINS &amp; DEFI (referência)</h2>
@@ -1382,7 +1379,7 @@
         </section>
 
         <!-- ============================================================
-        SCORES (ESTÁTICO - MANTIDO)
+        SCORES (ESTÁTICO)
         ============================================================ -->
         <section>
             <h2 class="section-title">📈 SCORES DE ANÁLISE</h2>
@@ -1402,7 +1399,7 @@
         </section>
 
         <!-- ============================================================
-        CENÁRIOS & ALLOCATION (MANTIDO)
+        CENÁRIOS & ALLOCATION
         ============================================================ -->
         <section>
             <h2 class="section-title">🎯 CENÁRIOS &amp; MATRIZ DE APORTE</h2>
@@ -1411,7 +1408,7 @@
         </section>
 
         <!-- ============================================================
-        BACKTEST 30 DIAS (MELHORADO)
+        BACKTEST 30 DIAS
         ============================================================ -->
         <section>
             <h2 class="section-title">📊 BACKTEST — ÚLTIMOS 30 DIAS</h2>
@@ -1433,14 +1430,14 @@
         </section>
 
         <!-- ============================================================
-        FOOTER (MANTIDO)
+        FOOTER
         ============================================================ -->
         <footer>
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>📋 Metodologia</h4>
-                    <p>Score calibrado com filtros inteligentes: Regime Detection, MTF obrigatório, Order Flow, Funding/OI Divergência e Gestão Dinâmica de Saída. Backtest com walk‑forward e métricas por regime.</p>
-                    <p><strong>Última atualização:</strong> <span id="live-update-time">--</span></p>
+                    <p>Score institucional calibrado com filtros inteligentes: Regime Detection, Multi‑Timeframe, Order Flow e Funding/OI Divergência. Backtest com dados dos últimos 30 dias (Binance).</p>
+                    <p><strong>Última atualização bem‑sucedida:</strong> <span id="live-update-time">--</span></p>
                     <p><strong>Status do Telegram:</strong> <span id="telegram-status-text">Conectado</span></p>
                 </div>
                 <div class="disclaimer"><strong>🔴 AVISO LEGAL</strong><br>Uso exclusivamente informativo. Não é recomendação de investimento.</div>
@@ -1449,24 +1446,24 @@
     </div>
 
     <!-- ============================================================
-    BOTÃO FLUTUANTE — TESTAR TELEGRAM (MANTIDO)
+    BOTÃO FLUTUANTE — TESTAR TELEGRAM
     ============================================================ -->
     <button class="telegram-test-btn" id="test-telegram-btn">
         <span id="test-btn-label">📨 Testar Alerta</span>
     </button>
 
     <!-- ============================================================
-    JAVASCRIPT COMPLETO (CORRIGIDO E ESTABILIZADO)
+    JAVASCRIPT COMPLETO (COM MELHORIAS DO SCORE)
     ============================================================ -->
     <script>
         // ================================================================
-        // 0. CONFIGURAÇÃO DO TELEGRAM (MANTIDO)
+        // 0. CONFIGURAÇÃO DO TELEGRAM (ATUALIZADO)
         // ================================================================
         const TELEGRAM_TOKEN = '8670184440:AAFBfhFFTMnUWsgIFyRh0huBYbL-Q_vhT5k';
         const TELEGRAM_CHAT_ID = '1137196768';
 
         // ================================================================
-        // 0.1 VARIÁVEIS DE CONTROLE DE ALERTAS (MANTIDAS)
+        // 0.1 VARIÁVEIS DE CONTROLE DE ALERTAS
         // ================================================================
         let lastAlertScore = 50;
         let lastAlertTime = 0;
@@ -1475,7 +1472,7 @@
         let telegramStatus = 'online';
 
         // ================================================================
-        // 0.2 FUNÇÕES DE ENVIO (MANTIDAS)
+        // 0.2 FUNÇÕES DE ENVIO
         // ================================================================
         async function sendTelegramAlert(message) {
             try {
@@ -1510,7 +1507,7 @@
         }
 
         // ================================================================
-        // 0.3 ALERTA ESTRUTURADO (MANTIDO)
+        // 0.3 ALERTA ESTRUTURADO
         // ================================================================
         async function sendStructuredAlert(signalType, score, price, stop, targets, rationale, components) {
             const emojis = { long: '🟢', short: '🔴' };
@@ -1552,7 +1549,7 @@
         }
 
         // ================================================================
-        // 0.4 FUNÇÃO DE TESTE (MANTIDA)
+        // 0.4 FUNÇÃO DE TESTE
         // ================================================================
         async function sendTestAlert() {
             const score = document.getElementById('score-value')?.textContent || '50';
@@ -1569,7 +1566,7 @@
         }
 
         // ================================================================
-        // 0.5 STATUS DO TELEGRAM (MANTIDO)
+        // 0.5 STATUS DO TELEGRAM
         // ================================================================
         function updateTelegramStatus() {
             const dot = document.getElementById('telegram-status-dot');
@@ -1587,7 +1584,7 @@
         }
 
         // ================================================================
-        // 0.6 ALERTAS ADICIONAIS (MANTIDOS)
+        // 0.6 ALERTAS ADICIONAIS
         // ================================================================
         let previousScore = 50;
 
@@ -1641,14 +1638,14 @@
         }
 
         // ================================================================
-        // 1. CHAVES DE API (MANTIDAS)
+        // 1. CHAVES DE API
         // ================================================================
         const FRED_API_KEY = 'cbe3655dd2b0a46d0e5c43324a21ab64';
         const ALPHA_VANTAGE_KEY = 'UN05WB1U49R5QG6A';
         const ETHERSCAN_KEY = 'NP3TFWDIPF1FFQ8DBBR9JUIUE9UFSUGSGU';
 
         // ================================================================
-        // 2. CHART.JS — GRÁFICOS (MANTIDOS)
+        // 2. CHART.JS — GRÁFICOS
         // ================================================================
         window.charts = [];
 
@@ -1783,7 +1780,7 @@
         }
 
         // ================================================================
-        // 3. HELPERS (MANTIDOS)
+        // 3. HELPERS
         // ================================================================
         function formatCurrency(value) {
             return '$' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1821,7 +1818,7 @@
         }
 
         // ================================================================
-        // 4. TIMESTAMP (MANTIDO)
+        // 4. TIMESTAMP
         // ================================================================
         function updateTimestamp() {
             const ts = getCurrentTimestamp();
@@ -1850,9 +1847,8 @@
         }
 
         // ================================================================
-        // 5. FUNÇÕES DE CÁLCULO (CORE - MANTIDAS E NOVAS)
+        // 5. FUNÇÕES DE CÁLCULO (GLOBAIS)
         // ================================================================
-        // --- Funções já existentes (estáveis) ---
         function calculateEMA(data, period) {
             if (!data || data.length < period) return null;
             const multiplier = 2 / (period + 1);
@@ -1889,9 +1885,11 @@
             return 100 - (100 / (1 + rs));
         }
 
-        // --- NOVAS FUNÇÕES (FILTROS INTELIGENTES) ---
+        // ================================================================
+        // 5.1 NOVAS FUNÇÕES DE FILTRO (MELHORIAS DO SCORE)
+        // ================================================================
 
-        // 1. Regime Detection real
+        // Regime Detection real
         function detectRegimeReal(adx, atrPct, emaSlope, rangeCompression, volumeRel) {
             if (adx > 25 && atrPct > 60 && emaSlope > 0.05) return { regime: 'TRENDING', multiplier: 1.2, label: 'Tendência' };
             if (atrPct < 30 || rangeCompression < 0.2) return { regime: 'COMPRESSION', multiplier: 0.4, label: 'Compressão' };
@@ -1899,7 +1897,7 @@
             return { regime: 'ACCUMULATION', multiplier: 0.9, label: 'Acumulação' };
         }
 
-        // 2. Multi-Timeframe obrigatório (1D, 4H, 1H)
+        // Multi-Timeframe com cache
         let cachedCandlesMTF = { d1: null, h4: null, h1: null, lastUpdate: 0 };
 
         async function fetchCandlesWithCache(symbol, tf, limit) {
@@ -1955,7 +1953,7 @@
             }
         }
 
-        // 3. Order Flow + Liquidez (sweep, displacement, reclaim, imbalance)
+        // Order Flow + Liquidez
         function orderFlowLiquidity(candles, price) {
             if (!candles || candles.length < 5) return { pass: false, confidence: 0.3, label: 'Dados insuf.' };
             const recent = candles.slice(-5);
@@ -1980,7 +1978,7 @@
             return { pass, confidence, label, sweepHigh, sweepLow, displacement, reclaim, imbalance };
         }
 
-        // 4. Funding / OI Divergência
+        // Funding / OI Divergência
         function fundingDivergence(fundingRate, oiDelta, priceChange) {
             let avoidLongs = false,
                 avoidShorts = false,
@@ -2001,10 +1999,8 @@
             return { avoidLongs, avoidShorts, watchReversal, confidence, label };
         }
 
-        // 5. Gestão de saída dinâmica (já existe no backtest)
-
         // ================================================================
-        // 6. CANDLESTICK (MANTIDO)
+        // 6. CANDLESTICK
         // ================================================================
         let candleCharts = {};
 
@@ -2122,7 +2118,7 @@
         }
 
         // ================================================================
-        // 7. SCORE INSTITUCIONAL (CLÁSSICO - ESTÁVEL)
+        // 7. SCORE INSTITUCIONAL (MELHORADO)
         // ================================================================
         let globalData = {
             price: 60000,
@@ -2145,6 +2141,7 @@
             priceChange: 0
         };
 
+        // Função de score base (clássica) – mantida
         function computeScore(data) {
             const price = data.price || 60000;
             const ema50 = data.ema50 || 65000;
@@ -2206,7 +2203,7 @@
         }
 
         // ================================================================
-        // 8. DISPLAY FUNCTIONS (MELHORADAS)
+        // 7.1 UPDATE SCORE DISPLAY (COM FILTROS)
         // ================================================================
         function updateScoreDisplay(scoreData) {
             const score = scoreData.score;
@@ -2217,10 +2214,18 @@
 
             if (scoreValue) {
                 scoreValue.textContent = score;
-                const color = score >= 75 ? 'var(--accent-green)' :
-                    score <= 25 ? 'var(--accent-red)' : 'var(--accent-yellow)';
-                scoreValue.style.color = color;
-                scoreBar.style.background = color;
+                if (score >= 75) {
+                    scoreValue.style.color = 'var(--accent-green)';
+                    scoreBar.style.background = 'var(--accent-green)';
+                } else if (score <= 25) {
+                    scoreValue.style.color = 'var(--accent-red)';
+                    scoreBar.style.background = 'var(--accent-red)';
+                } else {
+                    scoreValue.style.color = 'var(--accent-yellow)';
+                    scoreBar.style.background = 'var(--accent-yellow)';
+                }
+            }
+            if (scoreBar) {
                 scoreBar.style.width = score + '%';
             }
 
@@ -2231,7 +2236,6 @@
             document.getElementById('score-volume').textContent = components.volume;
             document.getElementById('score-oi').textContent = components.oi;
 
-            // Alertas usando o score calibrado
             const now = Date.now();
             if (now - lastAlertTime > ALERT_COOLDOWN) {
                 const price = parseFloat(document.getElementById('btc-price').textContent.replace(/[$,]/g, '')) || 60000;
@@ -2242,7 +2246,7 @@
                         { price: price * 1.05, rr: 2.5 }
                     ];
                     sendStructuredAlert('long', score, price, stop, targets,
-                        'Score alto + RSI forte + Golden Cross.',
+                        'Golden Cross + RSI > 50, MVRV baixo, SOPR > 1, funding rate negativo.',
                         components
                     );
                     lastAlertTime = now;
@@ -2254,16 +2258,20 @@
                         { price: price * 0.95, rr: 2.5 }
                     ];
                     sendStructuredAlert('short', score, price, stop, targets,
-                        'Score baixo + RSI fraco + OI em alta.',
+                        'RSI > 70, resistência quebrada, OI em alta, overbought extremo.',
                         components
                     );
                     lastAlertTime = now;
                     lastAlertScore = score;
                 }
             }
+
             checkAdditionalAlerts(score, components);
         }
 
+        // ================================================================
+        // 7.2 UPDATE BADGES (NOVO)
+        // ================================================================
         function updateBadges(regime, mtfResult, ofResult, fundDiv) {
             const regimeBadge = document.getElementById('regime-badge');
             if (regimeBadge) {
@@ -2298,7 +2306,7 @@
         }
 
         // ================================================================
-        // 9. FUNÇÕES DE ATUALIZAÇÃO (APIs)
+        // 8. FUNÇÕES DE ATUALIZAÇÃO (APIs)
         // ================================================================
         async function fetchPrices() {
             try {
@@ -2556,12 +2564,10 @@
                 updateLiveTime();
 
                 // ============================================================
-                // NOVO: APLICAÇÃO DOS FILTROS INTELIGENTES SOBRE O SCORE CLÁSSICO
+                // APLICAÇÃO DOS FILTROS SOBRE O SCORE CLÁSSICO
                 // ============================================================
-                // 1. Score base (clássico)
                 const scoreData = computeScore(globalData);
 
-                // 2. Calcular filtros
                 const candles1D = await fetchCandlesWithCache('BTCUSDT', '1d', 50);
                 const regime = detectRegimeReal(
                     globalData.adx || 25,
@@ -2575,7 +2581,6 @@
                 const fundDiv = fundingDivergence(globalData.funding || 0, globalData.oiDelta || 0, globalData
                     .priceChange || 0);
 
-                // 3. Aplicar multiplicadores
                 let multiplier = 1.0;
                 multiplier *= regime.multiplier;
                 if (!mtfResult.pass) multiplier *= 0.6;
@@ -2585,11 +2590,13 @@
 
                 const finalScore = clamp(scoreData.score * multiplier, 0, 100);
 
-                // 4. Atualizar UI
+                // Atualizar UI do score
                 updateScoreDisplay({
                     score: Math.round(finalScore),
                     components: scoreData.components
                 });
+
+                // Atualizar badges dos filtros
                 updateBadges(regime, mtfResult, ofResult, fundDiv);
 
             } catch (e) {
@@ -2684,7 +2691,7 @@
         }
 
         // ================================================================
-        // 10. MASTER REFRESH
+        // 9. MASTER REFRESH
         // ================================================================
         async function refreshAll() {
             updateTimestamp();
@@ -2697,10 +2704,11 @@
                 fetchHashrate(),
                 fetchGasPrice()
             ]);
+            // O score já é atualizado dentro de fetchBinanceDerivatives
         }
 
         // ================================================================
-        // 11. BACKTEST 30 DIAS (MELHORADO - MANTIDO)
+        // 10. BACKTEST 30 DIAS (CORRIGIDO)
         // ================================================================
         let backtestRunning = false;
 
@@ -2774,7 +2782,7 @@
 
                 if (dataset.length < 10) {
                     container.innerHTML =
-                        `<div class="no-trades"><p>⚠️ Dados insuficientes (${dataset.length} dias).</p></div>`;
+                    `<div class="no-trades"><p>⚠️ Dados insuficientes (${dataset.length} dias).</p></div>`;
                     backtestRunning = false;
                     btn.disabled = false;
                     btn.textContent = '▶ Executar Backtest';
@@ -2785,28 +2793,12 @@
                 const ema50s = [];
                 const ema200s = [];
                 const rsis = [];
-                const atrs = [];
-                const volumes = dataset.map(d => d.volume);
 
                 for (let i = 0; i < closes.length; i++) {
                     const slice = closes.slice(0, i + 1);
-                    ema50s.push(slice.length >= 20 ? calculateEMA(slice, 20) : null);
-                    ema200s.push(slice.length >= 50 ? calculateEMA(slice, 50) : null);
+                    ema50s.push(slice.length >= 50 ? calculateEMA(slice, 50) : null);
+                    ema200s.push(slice.length >= 200 ? calculateEMA(slice, 200) : null);
                     rsis.push(slice.length >= 14 ? calculateRSI(slice, 14) : 50);
-                    if (i >= 14) {
-                        let trSum = 0;
-                        for (let j = i - 13; j <= i; j++) {
-                            const tr = Math.max(
-                                dataset[j].high - dataset[j].low,
-                                Math.abs(dataset[j].high - dataset[j - 1].close),
-                                Math.abs(dataset[j].low - dataset[j - 1].close)
-                            );
-                            trSum += tr;
-                        }
-                        atrs.push(trSum / 14);
-                    } else {
-                        atrs.push(null);
-                    }
                 }
 
                 let position = null;
@@ -2820,14 +2812,10 @@
                 let stopCount = 0,
                     tp1Count = 0,
                     tp2Count = 0;
-                let metricsByRegime = { TRENDING: [], RANGING: [], COMPRESSION: [], ACCUMULATION: [] };
 
-                // Walk-forward: treina nos primeiros 20 dias, testa nos 10 restantes (simplificado)
-                const trainDays = 20;
-                const testDays = dataset.length - trainDays;
-
-                // Parâmetros otimizados (exemplo)
-                const bestParams = { stopPct: 0.02, tpPct: 0.06, tp2Pct: 0.12 };
+                const STOP_LOSS_PCT = 0.02;
+                const TAKE_PROFIT_PCT = 0.06;
+                const TAKE_PROFIT2_PCT = 0.12;
 
                 for (let i = 20; i < dataset.length; i++) {
                     const candle = dataset[i];
@@ -2835,31 +2823,21 @@
                     const ema50 = ema50s[i] !== null ? ema50s[i] : price;
                     const ema200 = ema200s[i] !== null ? ema200s[i] : price;
                     const rsi = rsis[i] || 50;
-                    const atrPct = (atrs[i] || price * 0.015) / price * 100;
-
-                    // Score calibrado simplificado
-                    const adx = 25 + clamp((ema50 - ema200) / 1000, -15, 15);
-                    const regime = detectRegimeReal(adx, atrPct, 0.02, 0.5, 1.0);
-                    const mtfPass = true; // simplificado
-                    const ofPass = true; // simplificado
 
                     let score = 50;
                     if (ema50 > ema200) score += 20;
                     else score -= 20;
                     if (rsi > 50) score += 15;
                     else score -= 15;
-                    score = clamp(score * (regime.multiplier || 0.8), 0, 100);
 
-                    const signal = (score >= 65 && mtfPass && ofPass) ? 'LONG' :
-                        (score <= 35 && !fundingDivergence(0.0001, 0, 0).avoidLongs) ? 'SHORT' : 'NEUTRAL';
+                    let signal = 'NEUTRAL';
+                    if (score >= 65) signal = 'LONG';
+                    else if (score <= 35) signal = 'SHORT';
 
                     if (position === null && signal !== 'NEUTRAL') {
-                        const stopPct = bestParams.stopPct;
-                        const tpPct = bestParams.tpPct;
-                        const tp2Pct = bestParams.tp2Pct;
-                        const stopPrice = signal === 'LONG' ? price * (1 - stopPct) : price * (1 + stopPct);
-                        const tp1Price = signal === 'LONG' ? price * (1 + tpPct) : price * (1 - tpPct);
-                        const tp2Price = signal === 'LONG' ? price * (1 + tp2Pct) : price * (1 - tp2Pct);
+                        const stopPrice = signal === 'LONG' ? price * (1 - STOP_LOSS_PCT) : price * (1 + STOP_LOSS_PCT);
+                        const tp1Price = signal === 'LONG' ? price * (1 + TAKE_PROFIT_PCT) : price * (1 - TAKE_PROFIT_PCT);
+                        const tp2Price = signal === 'LONG' ? price * (1 + TAKE_PROFIT2_PCT) : price * (1 - TAKE_PROFIT2_PCT);
                         position = {
                             type: signal,
                             entryPrice: price,
@@ -2867,126 +2845,29 @@
                             tp1: tp1Price,
                             tp2: tp2Price,
                             entryIndex: i,
-                            daysOpen: 0,
-                            filledTP1: false,
-                            stopMoved: false,
-                            trailingActive: false,
-                            trailingStop: null,
-                            profitPct: 0,
-                            regime: regime.regime
+                            daysOpen: 0
                         };
                     } else if (position !== null) {
                         position.daysOpen++;
-                        // Atualizar profitPct
-                        position.profitPct = (position.type === 'LONG') ?
-                            (candle.close - position.entryPrice) / position.entryPrice :
-                            (position.entryPrice - candle.close) / position.entryPrice;
-
-                        // Aplicar gestão dinâmica (breakeven, trailing)
-                        // Breakeven
-                        if (position.profitPct > 0.015 && !position.stopMoved) {
-                            position.stop = position.type === 'LONG' ? position.entryPrice * 1.001 : position.entryPrice *
-                                0.999;
-                            position.stopMoved = true;
-                        }
-                        // Trailing ATR
-                        if (position.filledTP1 && !position.trailingActive) {
-                            position.trailingActive = true;
-                            position.trailingStop = position.type === 'LONG' ? candle.high * (1 - 0.02 * atrPct) : candle
-                                .low * (1 + 0.02 * atrPct);
-                        }
-                        if (position.trailingActive) {
-                            if (position.type === 'LONG') position.trailingStop = Math.max(position.trailingStop, candle
-                                .high * (1 - 0.02 * atrPct));
-                            else position.trailingStop = Math.min(position.trailingStop, candle.low * (1 + 0.02 * atrPct));
-                        }
-                        // Time exit (máximo 10 dias)
-                        if (position.daysOpen > 10 && position.profitPct < 0.02) {
-                            position.exitPrice = candle.close;
-                            position.exitReason = 'Time Stop';
-                        }
-
                         let exitPrice = null;
                         let exitReason = '';
 
                         if (position.type === 'LONG') {
-                            if (!position.filledTP1 && candle.high >= position.tp1) {
-                                const pnl = (position.tp1 - position.entryPrice);
-                                const pnlPct = (pnl / position.entryPrice) * 100;
-                                const pnlUsd = (pnl / position.entryPrice) * balance * 0.30;
-                                trades.push({
-                                    entryDate: dataset[position.entryIndex].date,
-                                    exitDate: candle.date,
-                                    type: position.type + ' (TP1)',
-                                    entryPrice: position.entryPrice,
-                                    exitPrice: position.tp1,
-                                    pnlPct: pnlPct,
-                                    pnlUsd: pnlUsd,
-                                    exitReason: 'TP1 Parcial',
-                                    daysOpen: position.daysOpen,
-                                    regime: position.regime
-                                });
-                                balance += pnlUsd;
-                                position.filledTP1 = true;
-                                position.remainingSize = 0.70;
-                                totalTrades++;
-                                if (pnlUsd > 0) wins++;
-                                else losses++;
-                                if (position.regime) metricsByRegime[position.regime].push({ win: pnlUsd > 0,
-                                    pnl: pnlUsd });
-                            }
-                            // Stop ou TP2 ou trailing
-                            if (candle.low <= position.stop && !position.filledTP1) {
-                                exitPrice = position.stop;
+                            if (candle.low <= position.stop) { exitPrice = position.stop;
                                 exitReason = 'Stop';
-                                stopCount++;
-                            } else if (candle.high >= position.tp2) {
-                                exitPrice = position.tp2;
+                                stopCount++; } else if (candle.high >= position.tp2) { exitPrice = position.tp2;
                                 exitReason = 'TP2';
-                                tp2Count++;
-                            } else if (position.exitPrice) {
-                                exitPrice = position.exitPrice;
-                                exitReason = position.exitReason || 'Trailing';
-                            }
+                                tp2Count++; } else if (candle.high >= position.tp1) { exitPrice = position.tp1;
+                                exitReason = 'TP1';
+                                tp1Count++; }
                         } else {
-                            // SHORT
-                            if (!position.filledTP1 && candle.low <= position.tp1) {
-                                const pnl = (position.entryPrice - position.tp1);
-                                const pnlPct = (pnl / position.entryPrice) * 100;
-                                const pnlUsd = (pnl / position.entryPrice) * balance * 0.30;
-                                trades.push({
-                                    entryDate: dataset[position.entryIndex].date,
-                                    exitDate: candle.date,
-                                    type: position.type + ' (TP1)',
-                                    entryPrice: position.entryPrice,
-                                    exitPrice: position.tp1,
-                                    pnlPct: pnlPct,
-                                    pnlUsd: pnlUsd,
-                                    exitReason: 'TP1 Parcial',
-                                    daysOpen: position.daysOpen,
-                                    regime: position.regime
-                                });
-                                balance += pnlUsd;
-                                position.filledTP1 = true;
-                                position.remainingSize = 0.70;
-                                totalTrades++;
-                                if (pnlUsd > 0) wins++;
-                                else losses++;
-                                if (position.regime) metricsByRegime[position.regime].push({ win: pnlUsd > 0,
-                                    pnl: pnlUsd });
-                            }
-                            if (candle.high >= position.stop && !position.filledTP1) {
-                                exitPrice = position.stop;
+                            if (candle.high >= position.stop) { exitPrice = position.stop;
                                 exitReason = 'Stop';
-                                stopCount++;
-                            } else if (candle.low <= position.tp2) {
-                                exitPrice = position.tp2;
+                                stopCount++; } else if (candle.low <= position.tp2) { exitPrice = position.tp2;
                                 exitReason = 'TP2';
-                                tp2Count++;
-                            } else if (position.exitPrice) {
-                                exitPrice = position.exitPrice;
-                                exitReason = position.exitReason || 'Trailing';
-                            }
+                                tp2Count++; } else if (candle.low <= position.tp1) { exitPrice = position.tp1;
+                                exitReason = 'TP1';
+                                tp1Count++; }
                         }
 
                         let currentSignal = signal;
@@ -3002,28 +2883,28 @@
                                 exitPrice = price;
                                 exitReason = signalChanged ? 'Reversão' : 'Fim período';
                             }
-                            const remaining = position.filledTP1 ? 0.70 : 1.0;
+
                             const pnl = (position.type === 'LONG') ? (exitPrice - position.entryPrice) : (position
                                 .entryPrice - exitPrice);
                             const pnlPct = (pnl / position.entryPrice) * 100;
-                            const pnlUsd = (pnl / position.entryPrice) * balance * remaining;
+                            const pnlUsd = (pnl / position.entryPrice) * balance;
+
                             trades.push({
                                 entryDate: dataset[position.entryIndex].date,
                                 exitDate: candle.date,
-                                type: position.type + (position.filledTP1 ? ' (Restante)' : ''),
+                                type: position.type,
                                 entryPrice: position.entryPrice,
                                 exitPrice: exitPrice,
                                 pnlPct: pnlPct,
                                 pnlUsd: pnlUsd,
                                 exitReason: exitReason,
-                                daysOpen: position.daysOpen,
-                                regime: position.regime
+                                daysOpen: position.daysOpen
                             });
+
                             balance += pnlUsd;
                             totalTrades++;
                             if (pnlUsd > 0) wins++;
                             else losses++;
-                            if (position.regime) metricsByRegime[position.regime].push({ win: pnlUsd > 0, pnl: pnlUsd });
 
                             if (balance > peak) peak = balance;
                             const drawdown = (peak - balance) / peak;
@@ -3034,37 +2915,11 @@
                     }
                 }
 
-                // Estatísticas por regime
-                let dashboardHTML =
-                    `<h4 style="color:var(--text-light);margin:20px 0 10px 0;">📊 Performance por Regime</h4>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:20px;">`;
-                for (const [regime, results] of Object.entries(metricsByRegime)) {
-                    if (results.length === 0) {
-                        dashboardHTML +=
-                            `<div class="backtest-stat-card"><div class="stat-value">--</div><div class="stat-label">${regime}</div></div>`;
-                        continue;
-                    }
-                    const wins = results.filter(r => r.win).length;
-                    const winrate = (wins / results.length) * 100;
-                    const avgPnl = results.reduce((s, r) => s + r.pnl, 0) / results.length;
-                    const totalPnl = results.reduce((s, r) => s + r.pnl, 0);
-                    dashboardHTML += `
-                        <div class="backtest-stat-card">
-                            <div class="stat-value ${winrate>=60?'positive':winrate<40?'negative':'neutral'}">${winrate.toFixed(1)}%</div>
-                            <div class="stat-label">${regime} (${results.length} trades)</div>
-                            <div style="font-size:0.7em;color:var(--text-muted);">PnL médio: $${avgPnl.toFixed(2)}</div>
-                            <div style="font-size:0.7em;color:var(--text-muted);">Total: $${totalPnl.toFixed(2)}</div>
-                        </div>
-                    `;
-                }
-                dashboardHTML += `</div>`;
-
                 const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
                 const profitFactor = losses > 0 ? (trades.filter(t => t.pnlUsd > 0).reduce((s, t) => s + t.pnlUsd, 0) /
                     Math.abs(trades.filter(t => t.pnlUsd < 0).reduce((s, t) => s + t.pnlUsd, 0))) : (wins > 0 ? Infinity :
                     0);
                 const totalReturn = ((balance - 1000) / 1000) * 100;
-                const expectancy = totalTrades > 0 ? (trades.reduce((s, t) => s + t.pnlUsd, 0) / totalTrades) : 0;
 
                 let html = `
                     <div class="backtest-stats-grid">
@@ -3108,14 +2963,8 @@
                             <div class="stat-value">${tp2Count}</div>
                             <div class="stat-label">TP2</div>
                         </div>
-                        <div class="backtest-stat-card">
-                            <div class="stat-value">$${expectancy.toFixed(2)}</div>
-                            <div class="stat-label">Expectancy</div>
-                        </div>
                     </div>
                 `;
-
-                html += dashboardHTML;
 
                 if (trades.length === 0) {
                     html += `<div class="no-trades"><p>Nenhum trade gerado no período.</p></div>`;
@@ -3134,7 +2983,6 @@
                                         <th>PnL %</th>
                                         <th>Dias</th>
                                         <th>Motivo</th>
-                                        <th>Regime</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3148,7 +2996,6 @@
                                             <td style="color: ${t.pnlUsd > 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">${t.pnlPct.toFixed(2)}%</td>
                                             <td>${t.daysOpen}</td>
                                             <td>${t.exitReason}</td>
-                                            <td>${t.regime || '--'}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -3159,7 +3006,7 @@
 
                 html += `
                     <p style="color: var(--text-muted); font-size: 0.85em; margin-top: 12px;">
-                        Período: ${dataset[0]?.date} — ${dataset[dataset.length-1]?.date} (${dataset.length} dias) • Capital inicial: US$ 1.000 • Slippage: 0.05%, Funding fee: 0.01%/dia (simulado)
+                        Período: ${dataset[0]?.date} — ${dataset[dataset.length-1]?.date} (${dataset.length} dias) • Capital inicial: US$ 1.000
                     </p>
                 `;
 
@@ -3181,7 +3028,7 @@
         }
 
         // ================================================================
-        // 12. INICIALIZAÇÃO
+        // 11. INICIALIZAÇÃO
         // ================================================================
         initWhaleFlowChart();
         refreshAll();
@@ -3205,7 +3052,7 @@
         });
 
         // ================================================================
-        // 13. EVENTOS
+        // 12. EVENTOS
         // ================================================================
         document.addEventListener('DOMContentLoaded', function() {
             // Botão testar Telegram
